@@ -11,6 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'WallpaperHub',
       theme: ThemeData(primaryColor: Colors.white),
       home: const Home(),
