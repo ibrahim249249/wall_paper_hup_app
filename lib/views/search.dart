@@ -15,73 +15,76 @@ class Search extends StatefulWidget {
 }
 
 class _SearchState extends State<Search> {
-  TextEditingController searchController = TextEditingController();
+  final TextEditingController searchController = TextEditingController();
   List<WallpaperModel> wallpapers = [];
 
-  getSearchWallpapers(String query) async {
-    var response = await http.get(
+  Future<void> getSearchWallpapers(String query) async {
+    final response = await http.get(
       Uri.parse(
         "https://api.pexels.com/v1/search?query=$query&per_page=30&page=1",
       ),
       headers: {'Authorization': apiKey},
     );
-    print(response.body.toString());
-    Map<String, dynamic> jsonData = jsonDecode(response.body);
-    jsonData['photos'].forEach((element) {
-      //print(element);
-      WallpaperModel wallpaperModel = WallpaperModel();
-      wallpaperModel = WallpaperModel.fromMap(element);
-      wallpapers.add(wallpaperModel);
+    final Map<String, dynamic> jsonData = jsonDecode(response.body);
+    final photos = jsonData['photos'] as List<dynamic>? ?? [];
+    final fetchedWallpapers = photos
+        .map((element) => WallpaperModel.fromMap(element as Map<String, dynamic>))
+        .toList();
+    if (!mounted) return;
+    setState(() {
+      wallpapers = fetchedWallpapers;
     });
-    setState(() {});
   }
 
   @override
   void initState() {
-    getSearchWallpapers(widget.searchgQuery);
     super.initState();
     searchController.text = widget.searchgQuery;
+    getSearchWallpapers(widget.searchgQuery);
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: brandName(), elevation: 0.0),
-      body: Container(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: Color(0xfff5f8fd),
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                padding: EdgeInsets.symmetric(horizontal: 24),
-
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: searchController,
-                        decoration: InputDecoration(
-                          hintText: 'search wallpaper',
-                          border: InputBorder.none,
-                        ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: Color(0xfff5f8fd),
+                borderRadius: BorderRadius.circular(30),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 24),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: searchController,
+                      decoration: InputDecoration(
+                        hintText: 'search wallpaper',
+                        border: InputBorder.none,
                       ),
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        getSearchWallpapers(searchController.text);
-                      },
-                      child: Container(child: Icon(Icons.search)),
-                    ),
-                  ],
-                ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      getSearchWallpapers(searchController.text);
+                    },
+                    child: Icon(Icons.search),
+                  ),
+                ],
               ),
-              SizedBox(height: 16),
-              wallpapersList(wallpapers = wallpapers, context = context),
-            ],
-          ),
+            ),
+            SizedBox(height: 16),
+            wallpapersList(wallpapers, context),
+          ],
         ),
       ),
     );

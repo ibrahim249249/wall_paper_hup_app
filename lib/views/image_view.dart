@@ -25,7 +25,7 @@ class _ImageViewState extends State<ImageView> {
         children: [
           Hero(
             tag: widget.imgUrl,
-            child: Container(
+            child: SizedBox(
               height: MediaQuery.of(context).size.height,
               width: MediaQuery.of(context).size.width,
               child: Image.network(widget.imgUrl, fit: BoxFit.cover),
